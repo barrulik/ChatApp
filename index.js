@@ -44,18 +44,20 @@ app.get('/login', (req, res) => {
 io.on('connection', (socket) => {
   console.log('a user connected from the ip: ' + socket.handshake.address);
   for (msg of past_messages) 
-    socket.emit('chat_message', JSON.stringify(msg));
-  io.emit("chat_message", JSON.stringify({ author: "System", content: "Someone just entered the chat" }))
+    socket.emit('chat_message', msg);
+  io.emit("chat_message", { author: "System", content: "Someone just entered the chat" });
 
-  socket.on('send_chat_message', (message) => {
-    console.log(message);
-    message_json = JSON.parse(message)
-    if (message_json.author.toLowerCase() != "system") {
-      past_messages.push(message_json)
-      io.emit('chat_message', message);
-      // socket.emit('chat_message_confirmed', message)
+  socket.on('send_chat_message', (msg) => {
+    if (msg.author.toLowerCase() != "system") {
+      let new_id = Math.floor(1000000000+Math.random() * 9000000000);
+      past_messages.push(msg);
+      socket.emit("message_confirmation", {"old_id": msg.id, "new_id": new_id});
+      msg.id = new_id;
+      io.emit('chat_message', msg);
     }
   });
+
+
   socket.on('disconnect', () => {
     console.log('user disconnected');
   });
