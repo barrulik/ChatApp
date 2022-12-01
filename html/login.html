@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Login to UwUChat</title>
+    <style>
+      body { margin: 0; padding-bottom: 3rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+      #input { padding: 0 1rem; flex-grow: 1; border-radius: 2rem; margin: 0.25rem;   padding: 15px 32px;} 
+    </style>
+  </head>
+  <body style="text-align: center;">
+    <h1>Username</h1>
+    <div style="text-align: center;">
+      <input type="text" id="username" autocomplete="off"/></br>
+      <button id="submit" onclick="test()")">Send</button>
+    </div>
+
+
+
+
+
+
+    
+    <script>
+      var input = document.getElementById("username");
+      var username = "John Doe";
+      input.addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          document.getElementById("submit").click();
+        }
+      });
+
+      function test(){
+        username = document.getElementById('username').value;
+        window.location = '/chat?username=' + username;
+      }
+    </script>
+  </body>
+</html>

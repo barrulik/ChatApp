@@ -1,0 +1,17 @@
+{
+  "name": "discord_clown",
+  "version": "1.0.0",
+  "description": "UwU",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon ./index.js"
+  },
+  "author": "Barrulik",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "http": "^0.0.1-security",
+    "socket.io": "^4.5.4"
+  }
+}

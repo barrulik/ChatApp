@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>UwUChat</title>
+    <style>
+      body { background-color: #6A5ACD; margin: 0; padding-bottom: 3rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+      /* width */
+      ::-webkit-scrollbar {
+        width: 10px;
+      }
+      
+      /* Track */
+      ::-webkit-scrollbar-track {
+        background: #4f419f;
+      }
+      
+      /* Handle */
+      ::-webkit-scrollbar-thumb {
+        background: #362b77;
+      }
+      
+      /* Handle on hover */
+      ::-webkit-scrollbar-thumb:hover {
+        background: #1f1946;
+      }
+      
+      /* disable horizontal scrollbar */
+      html, body {
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+
+      #form { background: rgba(0, 0, 0, 0.15); padding: 0.25rem; position: fixed; bottom: 0; left: 0; right: 0; display: flex; height: 3rem; box-sizing: border-box; backdrop-filter: blur(10px); }
+      #input { color: #ffffff; background-color: #362b77; border: none; font-size: 1.3rem; padding: 0 1rem; flex-grow: 1; border-radius: 2rem; margin: 0.25rem;}
+      #input:focus { outline: none; }
+      #form > button { background: #362b77; border: none; padding: 0 1rem; margin: 0.25rem; border-radius: 3px; outline: none; color: #fff; }
+      #form > button:hover { background: #1f1946 }
+
+      #messages { list-style-type: none; margin: 0; padding: 0; }
+      #messages > li {font-size: 1.5rem; padding: 0.5rem 1rem;}
+      /* #messages > li:nth-child(odd) { background: #efefef; } */
+      #messages > li:hover {background: #4f419f;}
+      .awaiting_confirmation_message {color: #bcbcbc}
+      .confirmed_message {color: #ffffff}
+    </style>
+    <script>
+      var username = "John Doe"
+      function loadNewDoc(){
+        const param = window.location.search;
+        if (!window.location.search)
+          return;
+        const urlParams = new URLSearchParams(param);
+        if (urlParams.get("username"))
+          username = urlParams.get("username");
+      }
+    </script>
+  </head>
+  <body onLoad="loadNewDoc()">
+    <ul id="messages"></ul>
+    <form id="form" action="">
+      <input id="input" autocomplete="off"/><button>Send</button>
+    </form>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      var socket = io();
+    
+      const messages_element = document.getElementById('messages');
+      var form_element = document.getElementById('form');
+      var input_element = document.getElementById('input');
+      var awaiting_confirmation_messages = [];
+      var audio = new Audio('urgent.mp3');
+
+
+      form_element.addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (input_element.value) {
+          let message = {
+            author: username,
+            content: input_element.value,
+            id: Math.floor(10000+Math.random() * 900000)
+          }
+          add_message_element(message);
+          window.scrollTo(0, document.body.scrollHeight);
+          awaiting_confirmation_messages.push(message.id);
+          message = JSON.stringify(message);
+          socket.emit('send_chat_message', message);
+          input_element.value = '';
+        }
+      });
+    
+      socket.on('chat_message', function(msg) {
+        msg = JSON.parse(msg);
+        if (msg.author == username){
+          for (let i=0;i<awaiting_confirmation_messages.length;i++)
+            if (awaiting_confirmation_messages[i] == msg.id){
+              m = document.getElementById("message_" + msg.id);
+              m.className = "confirmed_message";
+              awaiting_confirmation_messages.splice(i, 1);
+            }
+        } else {
+          add_message_element(msg, true);
+          if (document.hidden)
+            audio.play();
+        }
+      });
+
+      function add_message_element(msg, confirmation){
+        var item = document.createElement('li');
+        item.textContent = msg.author + ": " + msg.content;
+        item.id = "message_" + msg.id;
+        item.className = confirmation ? "confirmed_message" : "awaiting_confirmation_message";
+        messages_element.appendChild(item);
+      }
+    </script>
+  </body>
+</html>
