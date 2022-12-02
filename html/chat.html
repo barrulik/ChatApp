@@ -101,27 +101,20 @@
 
         socket.on('chat_message', function(data) {
           if (data.author != username) {
+            let touchesBottom = isTouchingBottom();
             add_message_element(data, true);
+            
+            if (touchesBottom)
+              window.scrollTo(0, document.body.scrollHeight);
             if (document.hidden)
               audio.play();
           }
         });
 
 
-        // socket.on('chat_message', function(msg) {
-        //   if (msg.author == username){
-        //     for (let i=0;i<awaiting_confirmation_messages.length;i++)
-        //       if (awaiting_confirmation_messages[i] == msg.id){
-        //         m = document.getElementById("message_" + msg.id);
-        //         m.className = "confirmed_message";
-        //         awaiting_confirmation_messages.splice(i, 1);
-        //       }
-        //   } else {
-        //     add_message_element(msg, true);
-        //     if (document.hidden)
-        //       audio.play();
-        //   }
-        // });
+        function isTouchingBottom(){
+          return document.documentElement.clientHeight + window.scrollY >= document.documentElement.scrollHeight;
+        }
 
         function add_message_element(msg, confirmation){
           let item = document.createElement('li');
