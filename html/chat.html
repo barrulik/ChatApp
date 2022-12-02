@@ -44,7 +44,7 @@
       .confirmed_message {color: #ffffff}
     </style>
     <script>
-      var username = "John Doe"
+      let username = "John Doe"
       function loadNewDoc(){
         const param = window.location.search;
         if (!window.location.search)
@@ -62,73 +62,74 @@
     </form>
     <script src="/socket.io/socket.io.js"></script>
     <script>
-      var socket = io();
-    
-      const messages_element = document.getElementById('messages');
-      var form_element = document.getElementById('form');
-      var input_element = document.getElementById('input');
-      var awaiting_confirmation_messages = [];
-      var audio = new Audio('urgent.mp3');
+      {
+        let socket = io();
+        
+        const messages_element = document.getElementById('messages');
+        const form_element = document.getElementById('form');
+        const input_element = document.getElementById('input');
+        const audio = new Audio('urgent.mp3');
+        let awaiting_confirmation_messages = [];
 
-
-      form_element.addEventListener('submit', function(e) {
-        e.preventDefault();
-        if (input_element.value) {
-          let message = {
-            author: username,
-            content: input_element.value,
-            id: Math.floor(10000+Math.random() * 900000)
+        form_element.addEventListener('submit', function(e) {
+          e.preventDefault();
+          if (input_element.value) {
+            let message = {
+              author: username,
+              content: input_element.value,
+              id: Math.floor(10000+Math.random() * 900000)
+            }
+            add_message_element(message);
+            window.scrollTo(0, document.body.scrollHeight);
+            awaiting_confirmation_messages.push(message.id);
+            socket.emit('send_chat_message', message);
+            input_element.value = '';
           }
-          add_message_element(message);
-          window.scrollTo(0, document.body.scrollHeight);
-          awaiting_confirmation_messages.push(message.id);
-          socket.emit('send_chat_message', message);
-          input_element.value = '';
-        }
-      });
+        });
 
-      socket.on('message_confirmation', function(data) {
-        for (let i=0;i<awaiting_confirmation_messages.length;i++){
-          // console.log(awaiting_confirmation_messages[i], data.old_id)
-          if (awaiting_confirmation_messages[i] == data.old_id){
-            m = document.getElementById("message_" + data.old_id);
-            m.className = "confirmed_message";
-            m.id = data.new_id;
-            awaiting_confirmation_messages.splice(i, 1);
+        socket.on('message_confirmation', function(data) {
+          for (let i=0;i<awaiting_confirmation_messages.length;i++){
+            // console.log(awaiting_confirmation_messages[i], data.old_id)
+            if (awaiting_confirmation_messages[i] == data.old_id){
+              m = document.getElementById("message_" + data.old_id);
+              m.className = "confirmed_message";
+              m.id = data.new_id;
+              awaiting_confirmation_messages.splice(i, 1);
+            }
           }
+        });
+
+        socket.on('chat_message', function(data) {
+          if (data.author != username) {
+            add_message_element(data, true);
+            if (document.hidden)
+              audio.play();
+          }
+        });
+
+
+        // socket.on('chat_message', function(msg) {
+        //   if (msg.author == username){
+        //     for (let i=0;i<awaiting_confirmation_messages.length;i++)
+        //       if (awaiting_confirmation_messages[i] == msg.id){
+        //         m = document.getElementById("message_" + msg.id);
+        //         m.className = "confirmed_message";
+        //         awaiting_confirmation_messages.splice(i, 1);
+        //       }
+        //   } else {
+        //     add_message_element(msg, true);
+        //     if (document.hidden)
+        //       audio.play();
+        //   }
+        // });
+
+        function add_message_element(msg, confirmation){
+          let item = document.createElement('li');
+          item.textContent = msg.author + ": " + msg.content;
+          item.id = "message_" + msg.id;
+          item.className = confirmation ? "confirmed_message" : "awaiting_confirmation_message";
+          messages_element.appendChild(item);
         }
-      });
-
-      socket.on('chat_message', function(data) {
-        if (data.author != username) {
-          add_message_element(data, true);
-          if (document.hidden)
-            audio.play();
-        }
-      });
-
-
-      // socket.on('chat_message', function(msg) {
-      //   if (msg.author == username){
-      //     for (let i=0;i<awaiting_confirmation_messages.length;i++)
-      //       if (awaiting_confirmation_messages[i] == msg.id){
-      //         m = document.getElementById("message_" + msg.id);
-      //         m.className = "confirmed_message";
-      //         awaiting_confirmation_messages.splice(i, 1);
-      //       }
-      //   } else {
-      //     add_message_element(msg, true);
-      //     if (document.hidden)
-      //       audio.play();
-      //   }
-      // });
-
-      function add_message_element(msg, confirmation){
-        var item = document.createElement('li');
-        item.textContent = msg.author + ": " + msg.content;
-        item.id = "message_" + msg.id;
-        item.className = confirmation ? "confirmed_message" : "awaiting_confirmation_message";
-        messages_element.appendChild(item);
       }
     </script>
   </body>
