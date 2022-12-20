@@ -49,7 +49,7 @@ io.on('connection', (socket) => {
 
   socket.on('send_chat_message', (msg) => {
     if (msg.author.toLowerCase() != "system") {
-      let new_id = Math.floor(1000000000+Math.random() * 9000000000);
+      let new_id = Math.floor(1000000000 + Math.random() * 9000000000);
       past_messages.push(msg);
       socket.emit("message_confirmation", {"old_id": msg.id, "new_id": new_id});
       msg.id = new_id;
